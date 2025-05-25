@@ -1,0 +1,25 @@
+{
+    "clubs": [
+        {
+            "club_id": 1,
+            "preffered_contact_method": "Email",
+            "status": "Active",
+            "country": "Netherlands",
+            "city": "Amsterdam"
+        },
+        {
+            "club_id": 2,
+            "preffered_contact_method": "Phone",
+            "status": "Pending",
+            "country": "Netherlands",
+            "city": "Rotterdam"
+        },
+        {
+            "club_id": 3,
+            "preffered_contact_method": "SMS",
+            "status": "Closed",
+            "country": "Netherlands",
+            "city": "The Hague"
+        }
+    ]
+}

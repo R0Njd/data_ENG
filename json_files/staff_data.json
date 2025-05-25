@@ -1,0 +1,154 @@
+{
+  "staff": [
+    {
+      "staff_id": "1001",
+      "first_name": "Laura",
+      "last_name": "Smits",
+      "preffered_contact_method": "email",
+      "club_id": "1",
+      "dept_name": "Fitness",
+      "working_status": "active",
+      "rating": 4.6
+    },
+    {
+      "staff_id": "1002",
+      "first_name": "Bram",
+      "last_name": "Meijer",
+      "preffered_contact_method": "phone",
+      "club_id": "2",
+      "dept_name": "Yoga",
+      "working_status": "active",
+      "rating": 4.2
+    },
+    {
+      "staff_id": "1003",
+      "first_name": "Isabelle",
+      "last_name": "Vos",
+      "preffered_contact_method": "email",
+      "club_id": "3",
+      "dept_name": "Reception",
+      "working_status": "on leave",
+      "rating": 3.9
+    },
+    {
+      "staff_id": "1004",
+      "first_name": "Joris",
+      "last_name": "De Vries",
+      "preffered_contact_method": "sms",
+      "club_id": "3",
+      "dept_name": "Management",
+      "working_status": "active",
+      "rating": 4.8
+    },
+    {
+      "staff_id": "1005",
+      "first_name": "Eva",
+      "last_name": "Jansen",
+      "preffered_contact_method": "email",
+      "club_id": "2",
+      "dept_name": "Wellness",
+      "working_status": "active",
+      "rating": 4.4
+    },
+    {
+      "staff_id": "1006",
+      "first_name": "Tom",
+      "last_name": "Kuijpers",
+      "preffered_contact_method": "phone",
+      "club_id": "1",
+      "dept_name": "Fitness",
+      "working_status": "active",
+      "rating": 4.1
+    },
+    {
+      "staff_id": "1007",
+      "first_name": "Nina",
+      "last_name": "Peters",
+      "preffered_contact_method": "email",
+      "club_id": "2",
+      "dept_name": "Spa",
+      "working_status": "inactive",
+      "rating": 3.7
+    },
+    {
+      "staff_id": "1008",
+      "first_name": "Daan",
+      "last_name": "Koster",
+      "preffered_contact_method": "email",
+      "club_id": "1",
+      "dept_name": "Training",
+      "working_status": "active",
+      "rating": 4.3
+    },
+    {
+      "staff_id": "1009",
+      "first_name": "Femke",
+      "last_name": "Hendriks",
+      "preffered_contact_method": "phone",
+      "club_id": "3",
+      "dept_name": "Nutrition",
+      "working_status": "on leave",
+      "rating": 4.0
+    },
+    {
+      "staff_id": "1010",
+      "first_name": "Max",
+      "last_name": "Verbeek",
+      "preffered_contact_method": "sms",
+      "club_id": "1",
+      "dept_name": "Reception",
+      "working_status": "active",
+      "rating": 4.5
+    },
+    {
+      "staff_id": "1011",
+      "first_name": "Lea",
+      "last_name": "Schneider",
+      "preffered_contact_method": "email",
+      "club_id": "2",
+      "dept_name": "Yoga",
+      "working_status": "active",
+      "rating": 4.9
+    },
+    {
+      "staff_id": "1012",
+      "first_name": "Jonas",
+      "last_name": "Müller",
+      "preffered_contact_method": "phone",
+      "club_id": "3",
+      "dept_name": "Training",
+      "working_status": "active",
+      "rating": 4.1
+    },
+    {
+      "staff_id": "1013",
+      "first_name": "Sophie",
+      "last_name": "Wagner",
+      "preffered_contact_method": "email",
+      "club_id": "2",
+      "dept_name": "Wellness",
+      "working_status": "active",
+      "rating": 4.6
+    },
+    {
+      "staff_id": "1014",
+      "first_name": "Noah",
+      "last_name": "Becker",
+      "preffered_contact_method": "phone",
+      "club_id": "3",
+      "dept_name": "Fitness",
+      "working_status": "inactive",
+      "rating": 3.8
+    },
+    {
+      "staff_id": "1015",
+      "first_name": "Mia",
+      "last_name": "Weiss",
+      "preffered_contact_method": "sms",
+      "club_id": "1",
+      "dept_name": "Reception",
+      "working_status": "active",
+      "rating": 4.7
+    }
+  ]
+}
