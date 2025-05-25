@@ -1,8 +1,9 @@
 from database import Lead, engine, Staff, Club, Member, Subscription
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func, case
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime, timedelta
+from decimal import Decimal
 import json
 import pandas as pd
 
@@ -189,7 +190,7 @@ populate_sub('json_files/sub_data.json')
 
 
 
-# Query
+#------------ Query--------------------
 
 
 
@@ -213,8 +214,6 @@ for r in results:
 
 
 
-from collections import defaultdict
-from datetime import datetime, timedelta
 
 
 converted = defaultdict(int)
@@ -253,4 +252,42 @@ for staff_id in recent_converters:
     print(f"Staff ID {staff_id}: {rate:.2f}%")
 
 
+
+
+
+# Calculate total revenue per staff
+total_revenue = defaultdict(Decimal)
+grand_total = Decimal(0)
+
+for r in results:
+    amount = Decimal(r.amount)
+    total_revenue[r.staff_id] += amount
+    grand_total += amount
+
+# Print percentage share
+print("\nRevenue Share per Staff (% of total):")
+for staff_id, staff_total in total_revenue.items():
+    share = (staff_total / grand_total) * 100 if grand_total else 0
+    print(f"Staff ID {staff_id}: {share:.2f}%")
+
+
+conversion_counts = defaultdict(int)
+conversion_totals = defaultdict(Decimal)
+
+for r in results:
+    conversion_counts[r.staff_id] += 1
+    conversion_totals[r.staff_id] += Decimal(r.amount)
+
+# average revenue per staff
+avg_per_conversion = {
+    staff_id: (conversion_totals[staff_id] / conversion_counts[staff_id])
+    for staff_id in conversion_totals
+}
+
+max_avg = max(avg_per_conversion.values())
+
+print("\nAvg Revenue per Conversion (% of top staff):")
+for staff_id, avg in avg_per_conversion.items():
+    percent_of_max = (avg / max_avg) * 100 if max_avg else 0
+    print(f"Staff ID {staff_id}: {percent_of_max:.2f}%")
 
