@@ -5,8 +5,8 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
-import pandas as pd
-
+import logging
+logging.getLogger('sqlalchemy.engine').setLevel(logging.CRITICAL)
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -213,81 +213,261 @@ for r in results:
     print(r)
 
 
+("---------------------------------------------------------------------------------------------------")
 
 
 
-converted = defaultdict(int)
-seen = set()
-
-for r in results:
-    key = (r.staff_id, r.conversion_date)
-    if key not in seen:
-        converted[r.staff_id] += 1
-        seen.add(key)
+# percentage of staff with 
 
 
-staff_totals = defaultdict(int)
-all_leads = session.query(Lead.staff_id).all()
-for staff_id, in all_leads:
-    staff_totals[staff_id] += 1
+given_date = datetime(2024, 9, 1).date()
+three_months_ago = given_date - timedelta(days=90)
 
-#fake 3 months for conssitency in the example
-today = datetime.today().date()
-three_months_ago = datetime(2024, 6, 1).date()
+all_staff_ids = (
+    session.query(Lead.staff_id)
+    .filter(Lead.creation_date >= three_months_ago)
+    .filter(Lead.creation_date <= given_date)
+    .distinct()
+    .all()
+)
 
-
-recent_converters = set()
-for r in results:
-    conversion_date = r[0]
-    staff_id = r[1]
-    if conversion_date >= three_months_ago:
-        recent_converters.add(staff_id)
+results = []
 
 
-print("\n  Conversion Rate per Staff (last 3 months only):")
-for staff_id in recent_converters:
-    total = staff_totals[staff_id]
-    converted_count = converted.get(staff_id, 0)
-    rate = (converted_count / total) * 100 if total else 0
-    print(f"Staff ID {staff_id}: {rate:.2f}%")
+all_relevant_leads = (
+    session.query(Lead)
+    .filter(Lead.creation_date >= three_months_ago)
+    .filter(Lead.creation_date <= given_date)
+    .all()
+)
+
+
+staff_ids_set = {staff_tuple[0] for staff_tuple in all_staff_ids}
+all_staff_info = (
+    session.query(Staff)
+    .filter(Staff.staff_id.in_(list(staff_ids_set)))
+    .all()
+)
+staff_info_map = {staff.staff_id: staff for staff in all_staff_info}
+
+
+staff_lead_data = {}
+for staff_id in staff_ids_set:
+    staff_lead_data[staff_id] = {'total_leads': 0, 'conversions': 0}
+
+for lead in all_relevant_leads:
+    if lead.staff_id in staff_lead_data:
+        staff_lead_data[lead.staff_id]['total_leads'] += 1
+        if lead.conversion_date is not None:
+            staff_lead_data[lead.staff_id]['conversions'] += 1
+
+for staff_id, data in staff_lead_data.items():
+    staff_info = staff_info_map.get(staff_id)
+    total_leads = data['total_leads']
+    conversions = data['conversions']
+    rate = (conversions / total_leads) * 100 if total_leads > 0 else 0
+
+    staff_name = f"{staff_info.first_name} {staff_info.last_name}" if staff_info else "Unknown"
+
+    results.append({
+        'staff_id': staff_id,
+        'staff_name': staff_name,
+        'total_leads': total_leads,
+        'conversions': conversions,
+        'rate': rate
+    })
+
+
+results.sort(key=lambda x: x['rate'], reverse=True)
+
+print(f"CONVERSION RATES FOR ALL STAFF ({three_months_ago} to {given_date}):")
+print("Staff ID | Staff Name           | Total Leads | Conversions | Rate")
+print("-" * 70)
+
+for result in results:
+    print(f"{result['staff_id']:<8} | {result['staff_name']:<20} | {result['total_leads']:<11} | {result['conversions']:<11} | {result['rate']:.2f}%")
+("--------------------------------------------------------------------------------------------------")
+("--------------------------------------------------------------------------------------------------")
+("--------------------------------------------------------------------------------------------------")
+
+user_id = input("Enter staff ID to analyze: ")
+given_date = datetime(2024, 9, 1).date()
+three_months_ago = given_date - timedelta(days=90)
+
+print(f"\nAnalyzing Staff ID: {user_id}")
+print(f"Date range: {three_months_ago} to {given_date}")
+print("-" * 50)
+
+
+recent_leads = (
+    session.query(Lead)
+    .filter(Lead.staff_id == user_id)
+    .filter(Lead.creation_date >= three_months_ago)
+    .filter(Lead.creation_date <= given_date)
+    .all()
+)
+
+print(f"\nLEADS CREATED by Staff {user_id} in the period:")
+print("Lead ID | Creation Date | Name | Status")
+print("-" * 50)
+for lead in recent_leads:
+    print(f"{lead.lead_id} | {lead.creation_date} | {lead.first_name} {lead.last_name} | {lead.status}")
+
+print(f"\nTotal leads created: {len(recent_leads)}")
+
+
+recent_leads_count = len(recent_leads)
+
+
+converted_leads = (
+    session.query(Lead)
+    .filter(Lead.staff_id == user_id)
+    .filter(Lead.creation_date >= three_months_ago)
+    .filter(Lead.creation_date <= given_date)
+    .filter(Lead.conversion_date.isnot(None))
+    .all()
+)
+
+print(f"\nCONVERTED LEADS (has conversion_date):")
+print("Lead ID | Name | Created | Converted")
+print("-" * 50)
+for lead in converted_leads:
+    print(f"{lead.lead_id} | {lead.first_name} {lead.last_name} | {lead.creation_date} | {lead.conversion_date}")
+
+
+recent_conversions_count = len(converted_leads)
+
+print(f"\nTotal conversions: {recent_conversions_count}")
+
+# Calculate conversion rate
+recent_leads_count = len(recent_leads)
+conversion_rate = (recent_conversions_count / recent_leads_count) * 100 if recent_leads_count > 0 else 0
+
+print(f"\nFINAL RESULT:")
+print(f"Staff ID {user_id}: {recent_conversions_count}/{recent_leads_count} = {conversion_rate:.2f}%")
+("--------------------------------------------------------------------------------------------------")
+("--------------------------------------------------------------------------------------------------")
+("--------------------------------------------------------------------------------------------------")
+
+
+sql_logger = logging.getLogger('sqlalchemy.engine')
+sql_logger.setLevel(logging.CRITICAL)
+if sql_logger.hasHandlers():
+    sql_logger.handlers.clear()
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.CRITICAL)
+if root_logger.hasHandlers():
+    root_logger.handlers.clear()
 
 
 
 
-
-# Calculate total revenue per staff
-total_revenue = defaultdict(Decimal)
-grand_total = Decimal(0)
-
-for r in results:
-    amount = Decimal(r.amount)
-    total_revenue[r.staff_id] += amount
-    grand_total += amount
-
-# Print percentage share
-print("\nRevenue Share per Staff (% of total):")
-for staff_id, staff_total in total_revenue.items():
-    share = (staff_total / grand_total) * 100 if grand_total else 0
-    print(f"Staff ID {staff_id}: {share:.2f}%")
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
-conversion_counts = defaultdict(int)
-conversion_totals = defaultdict(Decimal)
+all_staff_ids = session.query(Lead.staff_id).distinct().all()
+staff_ids = [staff_id[0] for staff_id in all_staff_ids]
 
-for r in results:
-    conversion_counts[r.staff_id] += 1
-    conversion_totals[r.staff_id] += Decimal(r.amount)
+print("Analyzing subscription revenue percentage for ALL STAFF:")
+print("=" * 80)
 
-# average revenue per staff
-avg_per_conversion = {
-    staff_id: (conversion_totals[staff_id] / conversion_counts[staff_id])
-    for staff_id in conversion_totals
-}
 
-max_avg = max(avg_per_conversion.values())
+all_subscriptions = session.query(Subscription).all()
+total_revenue = Decimal(0)
+for sub in all_subscriptions:
+    total_revenue += Decimal(str(sub.amount))
 
-print("\nAvg Revenue per Conversion (% of top staff):")
-for staff_id, avg in avg_per_conversion.items():
-    percent_of_max = (avg / max_avg) * 100 if max_avg else 0
-    print(f"Staff ID {staff_id}: {percent_of_max:.2f}%")
+print(f"Total subscription revenue across all members: ${total_revenue}")
+print("-" * 80)
 
+
+staff_results = []
+
+for staff_id in staff_ids:
+    
+    converted_leads = (
+        session.query(Lead)
+        .filter_by(staff_id=staff_id)
+        .filter(Lead.status == "converted")
+        .filter(Lead.conversion_date.isnot(None))
+        .all()
+    )
+    
+    if converted_leads:
+        total_staff_revenue = Decimal(0)
+        processed_members = set()
+        
+        for lead in converted_leads:
+            # Find the member record for this converted lead
+            member = (
+                session.query(Member)
+                .filter(
+                    Member.first_name == lead.first_name,
+                    Member.last_name == lead.last_name,
+                    Member.date_of_birth == lead.date_of_birth
+                )
+                .first()
+            )
+            
+            if member and member.member_id not in processed_members:
+                processed_members.add(member.member_id)
+                
+                
+                member_subscriptions = (
+                    session.query(Subscription)
+                    .filter_by(member_id=member.member_id)
+                    .all()
+                )
+                
+                member_revenue = Decimal(0)
+                for sub in member_subscriptions:
+                    member_revenue += Decimal(str(sub.amount))
+                
+                total_staff_revenue += member_revenue
+        
+        
+        if total_revenue > 0:
+            percentage = (total_staff_revenue / total_revenue) * 100
+        else:
+            percentage = 0
+
+        
+        average_revenue = Decimal(0)
+        if len(processed_members) > 0:
+            average_revenue = total_staff_revenue / len(processed_members)
+        
+        staff_results.append({
+            'staff_id': staff_id,
+            'converted_leads': len(converted_leads),
+            'unique_members': len(processed_members),
+            'revenue': float(total_staff_revenue),
+            'average_revenue': float(average_revenue),
+            'percentage': float(percentage)
+        })
+
+
+staff_results.sort(key=lambda x: x['percentage'], reverse=True)
+
+
+print("SUBSCRIPTION REVENUE ANALYSIS BY STAFF:")
+
+print("Staff ID | Converted Leads | Unique Members | Revenue | Avg. Revenue | Percentage")
+print("-" * 90) 
+
+for result in staff_results:
+    
+    print(f"{result['staff_id']:<8} | {result['converted_leads']:<15} | {result['unique_members']:<14} | ${result['revenue']:<7.2f} | ${result['average_revenue']:<11.2f} | {result['percentage']:.2f}%")
+
+print("-" * 90) 
+print(f"Total Staff Analyzed: {len(staff_results)}")
+
+
+if staff_results:
+    print(f"\nTOP 5 STAFF BY SUBSCRIPTION REVENUE PERCENTAGE:")
+    print("-" * 50)
+    for i, result in enumerate(staff_results[:5], 1):
+        print(f"{i}. Staff {result['staff_id']}: {result['percentage']:.2f}% (${result['revenue']:.2f})")
+
+print("=" * 80)
