@@ -1,10 +1,10 @@
-# 🏋️ Gym Management Data Analysis
+#  Gym Management Data Analysis
 
 This project provides a data pipeline and analysis for a gym management system, including database models, data population from JSON files, and analytics on staff performance and revenue.
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 - `database.py` — SQLAlchemy models and in-memory SQLite setup.
 - `database_populator.py` — Populates the database from JSON files and runs analytics queries.
