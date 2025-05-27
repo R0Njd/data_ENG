@@ -1,4 +1,4 @@
-# database.py
+
 import logging
 logging.basicConfig(level=logging.CRITICAL, force=True)
 logging.getLogger('sqlalchemy.engine').setLevel(logging.CRITICAL)
@@ -85,4 +85,3 @@ class Subscription(base):
 
 base.metadata.create_all(engine)
 
-#day of the month , 300 $ , name of the staff, 
