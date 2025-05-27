@@ -8,6 +8,7 @@ import json
 import logging
 logging.getLogger('sqlalchemy.engine').setLevel(logging.CRITICAL)
 
+
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -242,6 +243,7 @@ all_relevant_leads = (
 )
 
 
+#info mapping 
 staff_ids_set = {staff_tuple[0] for staff_tuple in all_staff_ids}
 all_staff_info = (
     session.query(Staff)
@@ -250,7 +252,7 @@ all_staff_info = (
 )
 staff_info_map = {staff.staff_id: staff for staff in all_staff_info}
 
-
+# calculate total leads and conversions for each staff member
 staff_lead_data = {}
 for staff_id in staff_ids_set:
     staff_lead_data[staff_id] = {'total_leads': 0, 'conversions': 0}
@@ -286,11 +288,13 @@ print("-" * 70)
 
 for result in results:
     print(f"{result['staff_id']:<8} | {result['staff_name']:<20} | {result['total_leads']:<11} | {result['conversions']:<11} | {result['rate']:.2f}%")
+
+
 ("--------------------------------------------------------------------------------------------------")
 ("--------------------------------------------------------------------------------------------------")
 ("--------------------------------------------------------------------------------------------------")
 
-user_id = input("Enter staff ID to analyze: ")
+user_id = input("Enter staff ID : ")
 given_date = datetime(2024, 9, 1).date()
 three_months_ago = given_date - timedelta(days=90)
 
@@ -339,12 +343,13 @@ recent_conversions_count = len(converted_leads)
 
 print(f"\nTotal conversions: {recent_conversions_count}")
 
-# Calculate conversion rate
+#  conversion rate calculation
 recent_leads_count = len(recent_leads)
 conversion_rate = (recent_conversions_count / recent_leads_count) * 100 if recent_leads_count > 0 else 0
 
 print(f"\nFINAL RESULT:")
 print(f"Staff ID {user_id}: {recent_conversions_count}/{recent_leads_count} = {conversion_rate:.2f}%")
+
 ("--------------------------------------------------------------------------------------------------")
 ("--------------------------------------------------------------------------------------------------")
 ("--------------------------------------------------------------------------------------------------")
@@ -400,7 +405,6 @@ for staff_id in staff_ids:
         processed_members = set()
         
         for lead in converted_leads:
-            # Find the member record for this converted lead
             member = (
                 session.query(Member)
                 .filter(
