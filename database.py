@@ -1,3 +1,9 @@
+# database.py
+import logging
+logging.basicConfig(level=logging.CRITICAL, force=True)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.CRITICAL)
+logging.getLogger('sqlalchemy.engine').handlers.clear()
+
 
 import datetime
 from inspect import CO_ASYNC_GENERATOR
@@ -9,7 +15,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import relationship, backref
 
 
-engine = create_engine("sqlite:///:memory:", echo=True)
+engine = create_engine("sqlite:///:memory:", echo=False)
 base = declarative_base()
 connection = engine.connect()
 

@@ -5,8 +5,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
-import logging
-logging.getLogger('sqlalchemy.engine').setLevel(logging.CRITICAL)
 
 
 Session = sessionmaker(bind=engine)
@@ -354,24 +352,6 @@ print(f"Staff ID {user_id}: {recent_conversions_count}/{recent_leads_count} = {c
 ("--------------------------------------------------------------------------------------------------")
 ("--------------------------------------------------------------------------------------------------")
 
-
-sql_logger = logging.getLogger('sqlalchemy.engine')
-sql_logger.setLevel(logging.CRITICAL)
-if sql_logger.hasHandlers():
-    sql_logger.handlers.clear()
-
-root_logger = logging.getLogger()
-root_logger.setLevel(logging.CRITICAL)
-if root_logger.hasHandlers():
-    root_logger.handlers.clear()
-
-
-
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-
 all_staff_ids = session.query(Lead.staff_id).distinct().all()
 staff_ids = [staff_id[0] for staff_id in all_staff_ids]
 
@@ -475,3 +455,4 @@ if staff_results:
         print(f"{i}. Staff {result['staff_id']}: {result['percentage']:.2f}% (${result['revenue']:.2f})")
 
 print("=" * 80)
+
