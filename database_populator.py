@@ -4,6 +4,7 @@ from sqlalchemy import func, case
 from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
+from sqlalchemy import text   
 import json
 
 
@@ -456,3 +457,83 @@ if staff_results:
 
 print("=" * 80)
 
+("--------------------------------------------------------------------------------------------------")
+("--------------------------------------------------------------------------------------------------")
+("--------------------------------------------------------------------------------------------------")
+
+# ----------------------- Find months with >= $300 revenue -----------------
+
+#The month when €300 in sales was achieved and the 
+#name of the staff member who made the last conversion
+
+def find_300_dollar_months():
+    """
+    Find months where exactly $300 was made using simple SQL
+    """
+    
+
+    monthly_revenue_query = text("""
+    SELECT 
+        strftime('%Y-%m', conversation_date) as month,
+        SUM(amount) as total_revenue,
+        COUNT(*) as sub_count
+    FROM subscription 
+    WHERE conversation_date IS NOT NULL AND conversation_date != ''
+    GROUP BY strftime('%Y-%m', conversation_date)
+    HAVING SUM(amount) >= 300
+    ORDER BY month
+    """)
+    
+    result = session.execute(monthly_revenue_query).fetchall()
+    
+    print("MONTHS WITH >= $300 REVENUE:")
+    print("=" * 40)
+    
+    if not result:
+        print("No months found with >= $300 revenue.")
+        return
+    
+    for month, revenue, count in result:
+        print(f" Month: {month} | Revenue: ${revenue} | Subs: {count}")
+        
+    
+        last_conversion_query = text("""
+        SELECT 
+            s.sub_id,
+            s.member_id,
+            s.conversation_date,
+            s.amount,
+            m.first_name,
+            m.last_name
+        FROM subscription s
+        JOIN member m ON s.member_id = m.member_id
+        WHERE strftime('%Y-%m', s.conversation_date) = :month
+        ORDER BY s.conversation_date DESC
+        LIMIT 1
+        """)
+        
+        last_conv = session.execute(last_conversion_query, {"month": month}).fetchone()
+        
+        if last_conv:
+            sub_id, member_id, conv_date, amount, fname, lname = last_conv
+            print(f"Last Conversion: Sub ID {sub_id} | {fname} {lname} | ${amount}")
+            
+            
+            lead_info = (
+                session.query(Lead.lead_id, Lead.staff_id, Lead.conversion_date, Staff.first_name, Staff.last_name)
+                .join(Staff, Lead.staff_id == Staff.staff_id)
+                .filter(Lead.first_name == fname, Lead.last_name == lname)
+                .filter(Lead.conversion_date.isnot(None))
+                .first()
+            )
+            
+            if lead_info:
+                lead_id, staff_id, lead_conv_date, staff_fname, staff_lname = lead_info
+                print(f" Lead ID: {lead_id} | Staff: {staff_fname} {staff_lname} (ID: {staff_id})")
+            else:
+                print(" No matching lead found")
+        
+        print("-" * 40)
+
+
+find_300_dollar_months()
